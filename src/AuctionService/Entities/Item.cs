@@ -1,5 +1,10 @@
-﻿namespace AuctionService.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AuctionService.Entities
 {
+    // use the following command to tell the Entity Framework to use the
+    // given name for the table during Code First Migration
+    [Table("Items")]
     public class Item
     {
         public Guid Id { get; set; }
