@@ -18,4 +18,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// getting seed data
+try
+{
+    DbInitializer.InitDb(app);
+}
+catch(Exception e)
+{
+    Console.WriteLine(e);
+}
+
 app.Run();
