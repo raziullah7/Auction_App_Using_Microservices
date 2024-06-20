@@ -3,17 +3,21 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+//// Add services to the container. ////
+// add controllers service
 builder.Services.AddControllers();
+// add DB service
 builder.Services.AddDbContext<AuctionDbContext>(opt =>
 {
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+// add auto-mapper service
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+//// build the app. ////
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
+//// Configure the HTTP request pipeline. ////
 app.UseAuthorization();
 
 app.MapControllers();

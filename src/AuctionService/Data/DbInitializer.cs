@@ -7,6 +7,7 @@ namespace AuctionService.Data
     // class for Seeding Data
     public class DbInitializer
     {
+        // make a static method to call
         public static void InitDb(WebApplication app)
         {
             using var scope = app.Services.CreateScope();
@@ -14,6 +15,7 @@ namespace AuctionService.Data
             SeedData(scope.ServiceProvider.GetService<AuctionDbContext>());
         }
 
+        // make a private method that actually generates the seed data
         private static void SeedData(AuctionDbContext context)
         {
             context.Database.Migrate();
