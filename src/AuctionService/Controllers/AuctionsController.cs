@@ -1,0 +1,100 @@
+﻿using AuctionService.Data;
+using AuctionService.DTOs;
+using AuctionService.Entities;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace AuctionService.Controllers
+{
+    [ApiController]
+    [Route("api/auctions")]
+    public class AuctionsController : ControllerBase
+    {
+        // services needed as Dependency Injection
+        private readonly AuctionDbContext _context;
+        private readonly IMapper _mapper;
+
+        // making Dependency Injection of 2 services i.e., DbContext and AutoMapper
+        public AuctionsController(AuctionDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+
+        //---------------------------------- Endpoint # 1 ----------------------------------
+        [HttpGet]   // GET all auctions from the DB
+        public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions()
+        {
+            var auctions = await _context.Auctions
+                .Include(x => x.Item)
+                .OrderBy(x => x.Item.Make)
+                .ToListAsync();
+
+            return _mapper.Map<List<AuctionDto>>(auctions);
+        }
+
+        //---------------------------------- Endpoint # 2 ----------------------------------
+        [HttpGet("{id}")]    // GET auction by Id from the DB
+        public async Task<ActionResult<AuctionDto>> GetAuctionById(Guid id)
+        {
+            var auction = await _context.Auctions
+                .Include(x => x.Item)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (auction == null) return NotFound();
+
+            return _mapper.Map<AuctionDto>(auction);
+        }
+
+        //---------------------------------- Endpoint # 3 ----------------------------------
+        [HttpPost]  // POST an auction to the DB
+        public async Task<ActionResult<AuctionDto>> CreateAuction(CreateAuctionDto auctionDto)
+        {
+            var auction = _mapper.Map<Auction>(auctionDto);
+            // TODO: add current user as seller
+            auction.Seller = "test";
+
+            // adding to the DB
+            _context.Auctions.Add(auction);
+
+            // saving changes if the query was successful
+            // (result is only assigned if the number of changes are greater than zero)
+            var result = await _context.SaveChangesAsync() > 0;
+
+            // if the request was not successful
+            if (!result) return BadRequest("Could not save changes to the DB.");
+
+            // return the reference 
+            return CreatedAtAction(nameof(GetAuctionById), new { auction.Id }, _mapper.Map<AuctionDto>(auction));
+        }
+
+        //---------------------------------- Endpoint # 4 ----------------------------------
+        [HttpPut("{id}")]   // PUT(update) an auction using Id in the DB
+        public async Task<ActionResult> UpdateAuction(Guid id, UpdateAuctionDto auctionDto)
+        {
+            // getting all the auction 'Items'
+            var auction = await _context.Auctions
+                .Include(x => x.Item)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (auction == null) return NotFound();
+
+            // TODO: check seller == username
+
+            // making changes to the passed Id
+            auction.Item.Make = auctionDto.Make ?? auction.Item.Make;
+            auction.Item.Model = auctionDto.Model ?? auction.Item.Model;
+            auction.Item.Color = auctionDto.Color ?? auction.Item.Color;
+            auction.Item.Mileage = auctionDto.Mileage ?? auction.Item.Mileage;
+            auction.Item.Year = auctionDto.Year ?? auction.Item.Year;
+
+            // save changes to the DB
+            var result = await _context.SaveChangesAsync() > 0;
+
+            // performing the results check and returning
+            if(result) return Ok();
+            return BadRequest("Problem saving changes");
+        }
+    }
+}
