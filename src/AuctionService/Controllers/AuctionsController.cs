@@ -116,7 +116,7 @@ namespace AuctionService.Controllers
             // save changes to the DB
             var result = await _context.SaveChangesAsync() > 0;
 
-            // checking the results and returning status
+            // checking the results and returning the status
             if (!result) return BadRequest("Problem saving changes");
 
             return Ok();
