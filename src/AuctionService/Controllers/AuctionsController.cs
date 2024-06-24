@@ -78,6 +78,7 @@ namespace AuctionService.Controllers
                 .Include(x => x.Item)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
+            // return NotFound() if the DB query was unsuccessful
             if (auction == null) return NotFound();
 
             // TODO: check seller == username
@@ -92,9 +93,34 @@ namespace AuctionService.Controllers
             // save changes to the DB
             var result = await _context.SaveChangesAsync() > 0;
 
-            // performing the results check and returning
-            if(result) return Ok();
+            // checking the results and returning status
+            if (result) return Ok();
             return BadRequest("Problem saving changes");
         }
+
+        //---------------------------------- Endpoint # 4 ----------------------------------
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteAuction(Guid id)
+        {
+            // getting the auction by id
+            var auction = await _context.Auctions.FindAsync(id);
+
+            // return NotFound() if the DB query was unsuccessful
+            if (auction == null) return NotFound();
+
+            // TODO: check seller == username
+
+            // removing the auction by id
+            _context.Auctions.Remove(auction);
+
+            // save changes to the DB
+            var result = await _context.SaveChangesAsync() > 0;
+
+            // checking the results and returning status
+            if (!result) return BadRequest("Problem saving changes");
+
+            return Ok();
+        }
+
     }
 }
