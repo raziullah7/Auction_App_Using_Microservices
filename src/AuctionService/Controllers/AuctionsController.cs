@@ -3,6 +3,9 @@ using AuctionService.DTOs;
 using AuctionService.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Contracts;
+using MassTransit;
+using MassTransit.RabbitMqTransport;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +18,14 @@ namespace AuctionService.Controllers
         // services needed as Dependency Injection
         private readonly AuctionDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         // making Dependency Injection of 2 services i.e., DbContext and AutoMapper
-        public AuctionsController(AuctionDbContext context, IMapper mapper)
+        public AuctionsController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
 
         //---------------------------------- Endpoint # 1 ----------------------------------
@@ -67,12 +72,19 @@ namespace AuctionService.Controllers
             // saving changes if the query was successful
             // (result is only assigned if the number of changes are greater than zero)
             var result = await _context.SaveChangesAsync() > 0;
+            
+            // publishing an Event for Consumers to consume
+            var newAuction = _mapper.Map<AuctionDto>(auction);
+            // _mapper takes an AuctionDto object and converts it into AuctionCreated object
+            // the AuctionCreated object is then published by _publishEndpoint to all Consumers
+            await _publishEndpoint.Publish(_mapper.Map<AuctionCreated>(newAuction));
 
             // if the request was not successful
             if (!result) return BadRequest("Could not save changes to the DB.");
 
             // return the reference 
-            return CreatedAtAction(nameof(GetAuctionById), new { auction.Id }, _mapper.Map<AuctionDto>(auction));
+            return CreatedAtAction(nameof(GetAuctionById), 
+                new { auction.Id }, _mapper.Map<AuctionDto>(auction));
         }
 
         //---------------------------------- Endpoint # 4 ----------------------------------
