@@ -68,16 +68,16 @@ namespace AuctionService.Controllers
 
             // adding to the DB
             _context.Auctions.Add(auction);
-
-            // saving changes if the query was successful
-            // (result is only assigned if the number of changes are greater than zero)
-            var result = await _context.SaveChangesAsync() > 0;
             
             // publishing an Event for Consumers to consume
             var newAuction = _mapper.Map<AuctionDto>(auction);
             // _mapper takes an AuctionDto object and converts it into AuctionCreated object
             // the AuctionCreated object is then published by _publishEndpoint to all Consumers
             await _publishEndpoint.Publish(_mapper.Map<AuctionCreated>(newAuction));
+
+            // saving changes if the query was successful
+            // (result is only assigned if the number of changes are greater than zero)
+            var result = await _context.SaveChangesAsync() > 0;
 
             // if the request was not successful
             if (!result) return BadRequest("Could not save changes to the DB.");
@@ -107,6 +107,9 @@ namespace AuctionService.Controllers
             auction.Item.Color = auctionDto.Color ?? auction.Item.Color;
             auction.Item.Mileage = auctionDto.Mileage ?? auction.Item.Mileage;
             auction.Item.Year = auctionDto.Year ?? auction.Item.Year;
+            
+            // publish the changed object
+            await _publishEndpoint.Publish(_mapper.Map<AuctionUpdated>(auction));
 
             // save changes to the DB
             var result = await _context.SaveChangesAsync() > 0;
@@ -130,6 +133,9 @@ namespace AuctionService.Controllers
 
             // removing the auction by id
             _context.Auctions.Remove(auction);
+            
+            // publishing to masstransit
+            await _publishEndpoint.Publish<AuctionDeleted>( new {Id = auction.Id.ToString()} );
 
             // save changes to the DB
             var result = await _context.SaveChangesAsync() > 0;

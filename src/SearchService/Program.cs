@@ -1,4 +1,5 @@
 using System.Net;
+using Contracts;
 using MassTransit;
 using Polly;
 using Polly.Extensions.Http;
@@ -17,10 +18,20 @@ builder.Services.AddMassTransit(x =>
 {
     // adding consumer to MassTransit
     x.AddConsumersFromNamespaceContaining<AuctionCreatedConsumer>();
+    x.AddConsumersFromNamespaceContaining<AuctionUpdatedConsumer>();
     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search", false));
     
     x.UsingRabbitMq((context, cfg) =>
     {
+        // adding retry facility
+        cfg.ReceiveEndpoint("search-auction-created", e =>
+        {
+            // retry 5 times with a time interval difference of 5 seconds
+            e.UseMessageRetry(r => r.Interval(5, 15));
+            // configure this for AuctionCreatedConsumer
+            e.ConfigureConsumer<AuctionCreatedConsumer>(context);
+        });
+        
         cfg.ConfigureEndpoints(context);
     });
 });
