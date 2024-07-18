@@ -6,6 +6,7 @@ using AutoMapper.QueryableExtensions;
 using Contracts;
 using MassTransit;
 using MassTransit.RabbitMqTransport;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,12 +60,14 @@ namespace AuctionService.Controllers
         }
 
         //---------------------------------- Endpoint # 3 ----------------------------------
+        [Authorize]
         [HttpPost]  // POST an auction to the DB
         public async Task<ActionResult<AuctionDto>> CreateAuction(CreateAuctionDto auctionDto)
         {
             var auction = _mapper.Map<Auction>(auctionDto);
-            // TODO: add current user as seller
-            auction.Seller = "test";
+            
+            // add current user as seller
+            auction.Seller = User.Identity.Name;
 
             // adding to the DB
             _context.Auctions.Add(auction);
@@ -88,6 +91,7 @@ namespace AuctionService.Controllers
         }
 
         //---------------------------------- Endpoint # 4 ----------------------------------
+        [Authorize]
         [HttpPut("{id}")]   // PUT(update) an auction using Id in the DB
         public async Task<ActionResult> UpdateAuction(Guid id, UpdateAuctionDto auctionDto)
         {
@@ -99,7 +103,8 @@ namespace AuctionService.Controllers
             // return NotFound() if the DB query was unsuccessful
             if (auction == null) return NotFound();
 
-            // TODO: check seller == username
+            // check seller == username
+            if (auction.Seller != User.Identity.Name) return Forbid();
 
             // making changes to the passed Id
             auction.Item.Make = auctionDto.Make ?? auction.Item.Make;
@@ -120,6 +125,7 @@ namespace AuctionService.Controllers
         }
 
         //---------------------------------- Endpoint # 4 ----------------------------------
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAuction(Guid id)
         {
@@ -129,7 +135,8 @@ namespace AuctionService.Controllers
             // return NotFound() if the DB query was unsuccessful
             if (auction == null) return NotFound();
 
-            // TODO: check seller == username
+            // check seller == username
+            if (auction.Seller != User.Identity.Name) return Forbid();
 
             // removing the auction by id
             _context.Auctions.Remove(auction);
