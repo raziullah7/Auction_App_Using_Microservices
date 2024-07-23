@@ -24,14 +24,29 @@ public static class Config
             // this configuration is just for development
             new Client
             {
-                AllowedGrantTypes = { GrantType.ResourceOwnerPassword },
                 ClientName = "Postman",
-                
-                RedirectUris = {"https://www.getpostman.com/oauth2/callback"},
-                
                 ClientId = "postman",
                 ClientSecrets = { new Secret("NotASecret".Sha256()) },
+                
+                AllowedGrantTypes = { GrantType.ResourceOwnerPassword },
+                RedirectUris = {"https://www.getpostman.com/oauth2/callback"},
+                
                 AllowedScopes = {"openid", "profile", "auctionApp"}
+            },
+            new Client
+            {
+                ClientName = "nextApp",
+                ClientId = "nextApp",
+                ClientSecrets = { new Secret("secret".Sha256()) },
+                
+                AllowedGrantTypes = GrantTypes.CodeAndClientCredentials,
+                RequirePkce = false,
+                
+                RedirectUris = {"http://localhost:3000/api/auth/callback/server-id"},
+                
+                AllowOfflineAccess = true,
+                AllowedScopes = {"openid", "profile", "auctionApp"},
+                AccessTokenLifetime = 3600*24*30
             }
         };
 }
