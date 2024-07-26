@@ -1,5 +1,4 @@
-﻿using AuctionService.Entities;
-using Contracts;
+﻿using Contracts;
 using MassTransit;
 using MongoDB.Entities;
 using Item = SearchService.Models.Item;
