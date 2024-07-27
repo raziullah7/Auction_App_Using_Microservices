@@ -5,9 +5,8 @@ using IdentityModel;
 using IdentityService.Models;
 using Microsoft.AspNetCore.Identity;
 
-namespace IdentityService.Services;
+namespace IdentityService;
 
-// class to add username and fullname to the token that is returned from Identity Server
 public class CustomProfileService : IProfileService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -16,19 +15,19 @@ public class CustomProfileService : IProfileService
     {
         _userManager = userManager;
     }
-    
+
     public async Task GetProfileDataAsync(ProfileDataRequestContext context)
     {
         var user = await _userManager.GetUserAsync(context.Subject);
-        var existingClaims = await _userManager.GetClaimsAsync(user!);
+        var existingClaims = await _userManager.GetClaimsAsync(user);   
 
-        var claims = new Claim[]
+        var claims = new List<Claim>
         {
             new Claim("username", user.UserName)
         };
-        
+
         context.IssuedClaims.AddRange(claims);
-        context.IssuedClaims.Add(existingClaims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)!);
+        context.IssuedClaims.Add(existingClaims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name));
     }
 
     public Task IsActiveAsync(IsActiveContext context)

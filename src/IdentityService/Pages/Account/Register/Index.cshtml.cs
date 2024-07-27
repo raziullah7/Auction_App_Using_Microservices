@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using IdentityModel;
 using IdentityService.Models;
-using IdentityService.Pages.Account.Register;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,23 +12,19 @@ namespace IdentityService.Pages.Register
     [AllowAnonymous]
     public class Index : PageModel
     {
-        // dependency injection
         private readonly UserManager<ApplicationUser> _userManager;
-
-        // binding property for view model
-        [BindProperty]
-        public RegisterViewModel Input { get; set; }
-
-        // binding property for result
-        [BindProperty]
-        public bool RegisterSuccess { get; set; }
 
         public Index(UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
         }
 
-        // GET method of Register Page
+        [BindProperty]
+        public RegisterViewModel Input { get; set; }
+
+        [BindProperty]
+        public bool RegisterSuccess { get; set; }
+
         public IActionResult OnGet(string returnUrl)
         {
             Input = new RegisterViewModel
@@ -40,13 +35,10 @@ namespace IdentityService.Pages.Register
             return Page();
         }
 
-        // POST method for Register Page
         public async Task<IActionResult> OnPost()
         {
-            // if Cancel Button is pressed, redirect to home page
             if (Input.Button != "register") return Redirect("~/");
 
-            // if register button is clicked and all fields are filled
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser

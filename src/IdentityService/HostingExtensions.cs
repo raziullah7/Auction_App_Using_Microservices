@@ -1,8 +1,6 @@
 using Duende.IdentityServer;
 using IdentityService.Data;
 using IdentityService.Models;
-using IdentityService.Pages.Login;
-using IdentityService.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -30,6 +28,11 @@ internal static class HostingExtensions
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
 
+                if (builder.Environment.IsEnvironment("Docker"))
+                {
+                    options.IssuerUri = "identity-svc";
+                }
+
                 // see https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/
                 // options.EmitStaticAudienceClaim = true;
             })
@@ -39,7 +42,6 @@ internal static class HostingExtensions
             .AddAspNetIdentity<ApplicationUser>()
             .AddProfileService<CustomProfileService>();
 
-        // made this small change for HTTP and not https for client side
         builder.Services.ConfigureApplicationCookie(options => 
         {
             options.Cookie.SameSite = SameSiteMode.Lax;
