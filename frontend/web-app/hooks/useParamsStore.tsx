@@ -8,6 +8,7 @@ type State = {
   searchTerm: string;
   searchValue: string;
   orderBy: string;
+  filterBy: string;
 };
 
 type Action = {
@@ -23,6 +24,7 @@ const initialState: State = {
   searchTerm: "",
   searchValue: "",
   orderBy: "make",
+  filterBy: "live",
 };
 
 // creating state store
