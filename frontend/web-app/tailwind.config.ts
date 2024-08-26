@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import flowbite from "flowbite-react/tailwind";
+import flowbite from 'flowbite-react/tailwind';
 
 const config: Config = {
   content: [
@@ -17,9 +17,8 @@ const config: Config = {
       },
     },
   },
-  corePlugins: {
-    aspectRatio: false,
-  },
-  plugins: [require("@tailwindcss/aspect-ratio"), flowbite.plugin()],
+  plugins: [
+    flowbite.plugin()
+  ],
 };
 export default config;

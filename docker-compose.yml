@@ -6,32 +6,32 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - /var/lib/postgres/data
+      - /var/lib/postgresql/data
   mongodb:
     image: mongo
     environment:
-      # - MONGO_INITDB_DATABASE=admin
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=mongopw
     ports:
       - 27017:27017
     volumes:
-      - /var/lib/mongodb/data
+      - /data/db
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
     ports:
-    - 5672:5672
-    - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
   auction-svc:
     image: youknowrazi/auction-svc:latest
-    build: 
+    build:
       context: .
       dockerfile: src/AuctionService/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - RabbitMq__Host=rabbitmq
-      - ConnectionStrings__DefaultConnection=Server=postgres:5432;User Id=postgres;Password=postgrespw;Database=auctions
+      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Server=postgres;User Id=postgres;Password=postgrespw;Database=auctions
       - IdentityServiceUrl=http://identity-svc
     ports:
       - 7001:80
@@ -40,13 +40,13 @@ services:
       - rabbitmq
   search-svc:
     image: youknowrazi/search-svc:latest
-    build: 
+    build:
       context: .
       dockerfile: src/SearchService/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - RabbitMq__Host=rabbitmq
+      - RabbitMQ__Host=rabbitmq
       - ConnectionStrings__MongoDbConnection=mongodb://root:mongopw@mongodb
       - AuctionServiceUrl=http://auction-svc
     ports:
@@ -62,9 +62,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=postgres:5432;User Id=postgres;Password=postgrespw;Database=identity
+      - ConnectionStrings__DefaultConnection=Server=postgres; User Id=postgres; Password=postgrespw; Database=identity
     ports:
-      - 5000:80
+      - 5001:80
     depends_on:
       - postgres
   gateway-svc:

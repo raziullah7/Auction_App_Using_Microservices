@@ -1,34 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace AuctionService.DTOs
+namespace AuctionService.DTOs;
+
+public class CreateAuctionDto
 {
-    // contains the details of the item to be put on auction
-    public class CreateAuctionDto
-    {
-        // from Item.cs
-        [Required]
-        public string Make { get; set; }
+    [Required]
+    public string Make { get; set; } = string.Empty;
 
-        [Required]
-        public string Model { get; set; }
+    [Required]
+    public string Model { get; set; } = string.Empty;
 
-        [Required]
-        public int Year { get; set; }
+    [Required]
+    public int Year { get; set; }
 
-        [Required]
-        public string Color { get; set; }
+    [Required]
+    public string Color { get; set; } = string.Empty;
 
-        [Required]
-        public int Mileage { get; set; }
+    [Required]
+    public int Mileage { get; set; }
 
-        [Required]
-        public string ImageUrl { get; set; }
+    [Required]
+    public string ImageUrl { get; set; } = string.Empty;
 
-        // from Auction.cs
-        [Required]
-        public int ReservePrice { get; set; }
+    [Required]
+    public int ReservePrice { get; set; }
 
-        [Required]
-        public DateTime AuctionEnd { get; set; }
-    }
+    [Required]
+    public DateTime AuctionEnd { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using System;
+using AutoMapper;
 using Contracts;
 using MassTransit;
 using MongoDB.Entities;
@@ -6,27 +7,16 @@ using SearchService.Models;
 
 namespace SearchService.Consumers;
 
-public class AuctionCreatedConsumer : IConsumer<AuctionCreated>
+public class AuctionCreatedConsumer(IMapper mapper) : IConsumer<AuctionCreated>
 {
-    // dependency injection of AutoMapper
-    private readonly IMapper _mapper;
-    public AuctionCreatedConsumer(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
-    
-    // what happens when a "AuctionCreated" object is consumed
     public async Task Consume(ConsumeContext<AuctionCreated> context)
     {
-        Console.WriteLine("--> Consuming auction created " + context.Message.Id);
+        Console.WriteLine("--> Consuming Auction Created: " + context.Message.Id);
 
-        // getting <Item> from (context.Message)
-        var item = _mapper.Map<Item>(context.Message);
-        
-        // handling exception
-        if (item.Model == "Foo") throw new ArgumentException("Can't sell car with name Foo");
-        
-        // saving changes
+        var item = mapper.Map<Item>(context.Message);
+
+        if (item.Model == "Foo") throw new ArgumentException("Cannot sell cars with name of Foo");
+
         await item.SaveAsync();
     }
 }

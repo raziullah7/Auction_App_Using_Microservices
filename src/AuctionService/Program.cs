@@ -6,43 +6,39 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// // Add services to the container. // //
-// add controllers service
+// Add services to the container.
+
 builder.Services.AddControllers();
-// add DB service
 builder.Services.AddDbContext<AuctionDbContext>(opt =>
 {
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-
-// add auto-mapper service
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-// add mass-transit service
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumersFromNamespaceContaining<AuctionCreatedFaultConsumer>();
-    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("auction", false));
-    
-    // add out-box
-    x.AddEntityFrameworkOutbox<AuctionDbContext>( o =>
+    x.AddEntityFrameworkOutbox<AuctionDbContext>(o =>
     {
         o.QueryDelay = TimeSpan.FromSeconds(10);
+
         o.UsePostgres();
         o.UseBusOutbox();
     });
-    // add rabbitmq
+
+    x.AddConsumersFromNamespaceContaining<AuctionCreatedFaultConsumer>();
+
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("auction", false));
+
     x.UsingRabbitMq((context, cfg) =>
     {
-        // for dockerization
-        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", host => {
-            host.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
-            host.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
+        {
+            h.Username(builder.Configuration.GetValue("RabbitMQ:Username", "guest")!);
+            h.Password(builder.Configuration.GetValue("RabbitMQ:Password", "guest")!);
         });
+
         cfg.ConfigureEndpoints(context);
     });
 });
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -51,24 +47,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters.ValidateAudience = false;
         options.TokenValidationParameters.NameClaimType = "username";
     });
+builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 
-// // build the app. // //
 var app = builder.Build();
 
-// // Configure the HTTP request pipeline. // //
+// Configure the HTTP request pipeline.
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// getting seed data
+app.MapControllers();
+
 try
 {
     DbInitializer.InitDb(app);
 }
-catch(Exception e)
+catch (Exception e)
 {
     Console.WriteLine(e);
 }
 
 app.Run();
+
+public partial class Program {}

@@ -10,16 +10,16 @@
   },
   "dependencies": {
     "flowbite-react": "^0.10.1",
-    "next": "14.2.5",
+    "next": "^14.2.5",
+    "next-auth": "^5.0.0-beta.20",
     "query-string": "^9.1.0",
     "react": "^18",
-    "react-countdown": "^2.3.5",
+    "react-countdown": "^2.3.6",
     "react-dom": "^18",
     "react-icons": "^5.2.1",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
-    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
