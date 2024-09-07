@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import React from "react";
-import Heading from "../conponents/Heading";
+import Heading from "../components/Heading";
 import AuthTest from "./AuthTest";
 
 export default async function Session() {
