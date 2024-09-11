@@ -22,7 +22,7 @@ export default function AuthTest() {
       <Button outline isProcessing={loading} onClick={doUpdate}>
         Test auth
       </Button>
-      <div>{JSON.stringify(result, null, 2)}</div>
+      <div>{JSON.stringify(result)}</div>
     </div>
   );
 }
