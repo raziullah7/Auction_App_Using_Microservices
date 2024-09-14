@@ -1,9 +1,9 @@
 "use server";
 
-import { auth } from "@/auth";
 import { Auction, PagedResult } from "@/types";
 import { fetchWrapper } from "@/lib/fetchWrapper";
 import { FieldValues } from "react-hook-form";
+import { revalidatePath } from "next/cache";
 
 export async function getData(query: string): Promise<PagedResult<Auction>> {
   return await fetchWrapper.get(`search${query}`);
@@ -29,4 +29,18 @@ export async function createAuction(data: FieldValues) {
 // GET request by id
 export async function getDetailedViewData(id: string): Promise<Auction> {
   return await fetchWrapper.get(`auctions/${id}`);
+}
+
+// PUT request by id
+export async function updateAuction(id: string, data: FieldValues) {
+  const res = await fetchWrapper.put(`auctions/${id}`, data);
+  revalidatePath(id);
+  return res;
+}
+
+// DEL request by id
+export async function deleteAuction(id: string) {
+  const res = await fetchWrapper.del(`auctions/${id}`);
+  revalidatePath(id);
+  return res;
 }

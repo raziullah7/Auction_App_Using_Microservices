@@ -5,19 +5,26 @@ import React, { useEffect } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import Input from "../components/Input";
 import DateInput from "../components/DateInput";
-import { createAuction } from "../actions/auctionActions";
-import { useRouter } from "next/navigation";
+import { createAuction, updateAuction } from "../actions/auctionActions";
+import { usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { Auction } from "@/types";
 
-export default function AuctionForm() {
+type Props = {
+  auction?: Auction;
+};
+
+export default function AuctionForm({ auction }: Props) {
   // useRouter hook
   const router = useRouter();
+  const pathname = usePathname();
 
   // useForm hook
   const {
     control,
     handleSubmit,
     setFocus,
+    reset,
     formState: { isSubmitting, isValid },
   } = useForm({
     mode: "onTouched",
@@ -25,17 +32,34 @@ export default function AuctionForm() {
 
   // iseEffect hook
   useEffect(() => {
+    if (auction) {
+      const { make, model, color, mileage, year } = auction;
+      reset({ make, model, color, mileage, year });
+    }
     setFocus("make");
   }, [setFocus]);
 
   // function that attempts to make the POST request
   async function onSubmit(data: FieldValues) {
     try {
-      const res = await createAuction(data);
+      let id = "";
+      let res;
+      // if a new auction is being created, assign the response's id to id variable
+      if (pathname === "/auctions/create") {
+        res = await createAuction(data);
+        id = res.id;
+      }
+      // if an auction is being updated, assign passed auction's id to id variable
+      else {
+        if (auction) {
+          res = await updateAuction(auction.id, data);
+          id = auction.id;
+        }
+      }
       if (res.error) {
         throw res.error;
       }
-      router.push(`/auctions/details/${res.id}`);
+      router.push(`/auctions/details/${id}`);
     } catch (error: any) {
       toast.error(error.status + " " + error.message);
     }
@@ -77,29 +101,36 @@ export default function AuctionForm() {
           rules={{ required: "Mileage is required" }}
         />
       </div>
-      <Input
-        label="Image URL"
-        name="imageUrl"
-        control={control}
-        rules={{ required: "Image URL is required" }}
-      />
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          label="Reserve Price (enter 0 if no reserve price)"
-          name="reservePrice"
-          type="number"
-          control={control}
-          rules={{ required: "Reserve Price is required" }}
-        />
-        <DateInput
-          label="Auction end date/time"
-          name="auctionEnd"
-          dateFormat="dd MMMM yyyy h:mm a"
-          showTimeSelect
-          control={control}
-          rules={{ required: "Auction end date is required" }}
-        />
-      </div>
+
+      {/* display these only if a new auction is being created */}
+      {pathname === "/auctions/create" && (
+        <>
+          <Input
+            label="Image URL"
+            name="imageUrl"
+            control={control}
+            rules={{ required: "Image URL is required" }}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Reserve Price (enter 0 if no reserve price)"
+              name="reservePrice"
+              type="number"
+              control={control}
+              rules={{ required: "Reserve Price is required" }}
+            />
+            <DateInput
+              label="Auction end date/time"
+              name="auctionEnd"
+              dateFormat="dd MMMM yyyy h:mm a"
+              showTimeSelect
+              control={control}
+              rules={{ required: "Auction end date is required" }}
+            />
+          </div>
+        </>
+      )}
+
       <div className="flex justify-between">
         <Button outline color="gray">
           Cancel
