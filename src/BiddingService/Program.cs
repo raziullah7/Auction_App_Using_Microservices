@@ -1,6 +1,5 @@
 using BiddingService.Consumers;
 using BiddingService.Services;
-using Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using MongoDB.Driver;
@@ -46,6 +45,9 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // add background service
 builder.Services.AddHostedService<CheckAuctionFinished>();
+
+// adding grpc client
+builder.Services.AddScoped<GrpcAuctionClient>();
 
 var app = builder.Build();
 

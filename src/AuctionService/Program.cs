@@ -1,5 +1,6 @@
 using AuctionService.Consumers;
 using AuctionService.Data;
+using AuctionService.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 
+// adding Grpc service
+builder.Services.AddGrpc();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -57,7 +61,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapControllers();
+// mapping Grpc
+app.MapGrpcService<GrpcAuctionService>();
 
 try
 {
