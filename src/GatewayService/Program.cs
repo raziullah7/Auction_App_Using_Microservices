@@ -14,8 +14,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters.NameClaimType = "username";
     });
 
+// Adding CORS for cross requests
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("customPolicy", b =>
+    {
+        b.AllowAnyHeader().AllowAnyMethod().AllowCredentials()
+            .WithOrigins(builder.Configuration["ClientApp"] ?? string.Empty);
+    });
+});
 
 var app = builder.Build();
+
+// middleware for CORS
+app.UseCors();
 
 app.MapReverseProxy();
 
