@@ -4,11 +4,10 @@ using NotificationService.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// rabbitmq config
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumersFromNamespaceContaining<AuctionCreatedConsumer>();
-    
+
     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("nt", false));
 
     x.UsingRabbitMq((context, cfg) =>
@@ -22,8 +21,6 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
-
-// adding signalR
 builder.Services.AddSignalR();
 
 var app = builder.Build();

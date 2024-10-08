@@ -25,9 +25,21 @@ export default function BidList({ user, auction }: Props) {
     const bids = useBidStore((state) => state.bids);
     const setBids = useBidStore((state) => state.setBids);
 
+    //functionality for disabling the bidding input when timer runs out
+    const open = useBidStore((state) => state.open);
+    const setOpen = useBidStore((state) => state.setOpen);
+
+    // comparing current date with auction's end date
+    const openForBids = new Date(auction.auctionEnd) > new Date();
+
     // getting the highest bid value
     const highBid = bids.reduce(
-        (prev, current) => (prev > current.amount ? prev : current.amount),
+        (prev, current) =>
+            prev > current.amount
+                ? prev
+                : current.bidStatus.includes("Accepted")
+                ? current.amount
+                : prev,
         0
     );
 
@@ -41,6 +53,11 @@ export default function BidList({ user, auction }: Props) {
             .catch((err) => toast.error(err.message))
             .finally(() => setLoading(false));
     }, [auction.id, setLoading, setBids]);
+
+    // use effect for disabling the bidding input when the timer runs out
+    useEffect(() => {
+        setOpen(openForBids);
+    }, [openForBids, setOpen]);
 
     // loading placeholder
     if (loading) {
@@ -76,22 +93,25 @@ export default function BidList({ user, auction }: Props) {
             </div>
 
             <div className="px-2 pb-2 text-gray-500">
-                {
+                {!open ? (
+                    // if the timer has run out
+                    <div className="flex items-center justify-center p-2 text-lg font-semibold">
+                        This auction has finished
+                    </div>
+                ) : !user ? (
                     // if user is not signed in
-                    !user ? (
-                        <div className="flex items-center justify-center p-2 text-lg font-semibold">
-                            Please login to make a bid
-                        </div>
-                    ) : // if user is signed in and is trying to bid on him own auction
-                    user && user.username === auction.seller ? (
-                        <div className="flex items-center justify-center p-2 text-lg font-semibold">
-                            You cannot bid on your own auction
-                        </div>
-                    ) : (
-                        // if user is trying to bid on someone else's auction
-                        <BidForm auctionId={auction.id} highBid={highBid} />
-                    )
-                }
+                    <div className="flex items-center justify-center p-2 text-lg font-semibold">
+                        Please login to make a bid
+                    </div>
+                ) : // if user is signed in and is trying to bid on him own auction
+                user && user.username === auction.seller ? (
+                    <div className="flex items-center justify-center p-2 text-lg font-semibold">
+                        You cannot bid on your own auction
+                    </div>
+                ) : (
+                    // if user is trying to bid on someone else's auction
+                    <BidForm auctionId={auction.id} highBid={highBid} />
+                )}
             </div>
         </div>
     );
