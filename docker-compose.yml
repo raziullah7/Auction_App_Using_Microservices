@@ -1,115 +1,140 @@
 services:
-  postgres:
-    image: postgres
-    environment:
-      - POSTGRES_PASSWORD=postgrespw
-    ports:
-      - 5432:5432
-    volumes:
-      - /var/lib/postgresql/data
-  mongodb:
-    image: mongo
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=mongopw
-    ports:
-      - 27017:27017
-    volumes:
-      - /data/db
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-  auction-svc:
-    image: youknowrazi/auction-svc:latest
-    build:
-      context: .
-      dockerfile: src/AuctionService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ASPNETCORE_URLS=http://+:7777
-      - RabbitMQ__Host=rabbitmq
-      - ConnectionStrings__DefaultConnection=Server=postgres;User Id=postgres;Password=postgrespw;Database=auctions
-      - IdentityServiceUrl=http://identity-svc
-      - Kestrel__Endpoints__Grpc__Protocols=Http2
-      - Kestrel__Endpoints__Grpc__Url=http://+:7777
-      - Kestrel__Endpoints__WebApi__Protocols=Http1
-      - Kestrel__Endpoints__WebApi__Url=http://+:80
-    ports:
-      - 7001:80
-      - 7777:7777
-    depends_on:
-      - postgres
-      - rabbitmq
-  search-svc:
-    image: youknowrazi/search-svc:latest
-    build:
-      context: .
-      dockerfile: src/SearchService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - RabbitMQ__Host=rabbitmq
-      - ConnectionStrings__MongoDbConnection=mongodb://root:mongopw@mongodb
-      - AuctionServiceUrl=http://auction-svc
-    ports:
-      - 7002:80
-    depends_on:
-      - mongodb
-      - rabbitmq
-  identity-svc:
-    image: youknowrazi/identity-svc:latest
-    build:
-      context: .
-      dockerfile: src/IdentityService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=postgres; User Id=postgres; Password=postgrespw; Database=identity
-    ports:
-      - 5001:80
-    depends_on:
-      - postgres
-  gateway-svc:
-    image: youknowrazi/gateway-svc:latest
-    build:
-      context: .
-      dockerfile: src/GatewayService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Docker
-      - ASPNETCORE_URLS=http://+:80
-    ports:
-      - 6001:80
-  bid-svc:
-    image: youknowrazi/bid-svc:latest
-    build:
-      context: .
-      dockerfile: src/BiddingService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - RabbitMQ__Host=rabbitmq
-      - ConnectionStrings__BidDbConnection=mongodb://root:mongopw@mongodb
-      - IdentityServiceUrl=http://identity-svc
-      - GrpcAuction=http://auction-svc:7777
-    ports:
-      - 7003:80
-    depends_on:
-      - mongodb
-      - rabbitmq
-  notify-svc:
-    image: youknowrazi/notify-svc:latest
-    build:
-      context: .
-      dockerfile: src/NotificationService/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - RabbitMQ__Host=rabbitmq
-    ports:
-      - 7004:80
-    depends_on:
-      - rabbitmq
+    postgres:
+        image: postgres
+        environment:
+            - POSTGRES_PASSWORD=postgrespw
+        ports:
+            - 5432:5432
+        volumes:
+            - /var/lib/postgresql/data
+    mongodb:
+        image: mongo
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=mongopw
+        ports:
+            - 27017:27017
+        volumes:
+            - /data/db
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+    auction-svc:
+        image: youknowrazi/auction-svc:latest
+        build:
+            context: .
+            dockerfile: src/AuctionService/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:80
+            - ASPNETCORE_URLS=http://+:7777
+            - RabbitMQ__Host=rabbitmq
+            - ConnectionStrings__DefaultConnection=Server=postgres;User Id=postgres;Password=postgrespw;Database=auctions
+            - IdentityServiceUrl=http://identity-svc
+            - Kestrel__Endpoints__Grpc__Protocols=Http2
+            - Kestrel__Endpoints__Grpc__Url=http://+:7777
+            - Kestrel__Endpoints__WebApi__Protocols=Http1
+            - Kestrel__Endpoints__WebApi__Url=http://+:80
+        ports:
+            - 7001:80
+            - 7777:7777
+        depends_on:
+            - postgres
+            - rabbitmq
+    search-svc:
+        image: youknowrazi/search-svc:latest
+        build:
+            context: .
+            dockerfile: src/SearchService/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:80
+            - RabbitMQ__Host=rabbitmq
+            - ConnectionStrings__MongoDbConnection=mongodb://root:mongopw@mongodb
+            - AuctionServiceUrl=http://auction-svc
+        ports:
+            - 7002:80
+        depends_on:
+            - mongodb
+            - rabbitmq
+    identity-svc:
+        image: youknowrazi/identity-svc:latest
+        build:
+            context: .
+            dockerfile: src/IdentityService/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=http://+:80
+            - IssuerUri=http://id.carsties.local
+            - ClientApp=http://app.carsties.local
+            - ConnectionStrings__DefaultConnection=Server=postgres; User Id=postgres; Password=postgrespw; Database=identity
+            - VIRTUAL_HOST=id.carsties.local
+        depends_on:
+            - postgres
+    gateway-svc:
+        image: youknowrazi/gateway-svc:latest
+        build:
+            context: .
+            dockerfile: src/GatewayService/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=http://+:80
+            - ClientApp=htp://app.carsties.local
+            - VIRTUAL_HOST=api.carsties.local
+    bid-svc:
+        image: youknowrazi/bid-svc:latest
+        build:
+            context: .
+            dockerfile: src/BiddingService/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:80
+            - RabbitMQ__Host=rabbitmq
+            - ConnectionStrings__BidDbConnection=mongodb://root:mongopw@mongodb
+            - IdentityServiceUrl=http://identity-svc
+            - GrpcAuction=http://auction-svc:7777
+        ports:
+            - 7003:80
+        depends_on:
+            - mongodb
+            - rabbitmq
+    notify-svc:
+        image: youknowrazi/notify-svc:latest
+        build:
+            context: .
+            dockerfile: src/NotificationService/Dockerfile
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_URLS=http://+:80
+            - RabbitMQ__Host=rabbitmq
+        ports:
+            - 7004:80
+        depends_on:
+            - rabbitmq
+    web-app:
+        image: youknowrazi/web-app
+        build:
+            context: .
+            dockerfile: frontend/web-app/Dockerfile
+        volumes:
+            - /var/lib/web/data
+        environment:
+            - AUTH_SECRET="LurluBaXahjniWEoBXPBSfmAQzqCVQoC+q4nIPmLD+4="
+            - AUTH_URL=http://app.carsties.local
+            - AUTH_URL_INTERNAL=http://web-app:3000
+            - API_URL=http://gateway-svc/
+            - ID_URL=http://id.carsties.local
+            - ID_URL_INTERNAL=http://identity-svc
+            - NOTIFY_URL=http://api.carsties.local/notifications
+            - VIRTUAL_HOST=app.carsties.local
+            - VIRTUAL_PORT=3000
+    nginx-proxy:
+        image: nginxproxy/nginx-proxy
+        container_name: nginx-proxy
+        ports:
+            - "80:80"
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro

@@ -10,7 +10,7 @@ public class BidPlacedConsumer(IHubContext<NotificationHub> hubContext) : IConsu
 {
     public async Task Consume(ConsumeContext<BidPlaced> context)
     {
-        Console.WriteLine("==> auction finished message received");
+        Console.WriteLine("==> bid placed message received");
 
         await hubContext.Clients.All.SendAsync("BidPlaced", context.Message);
     }

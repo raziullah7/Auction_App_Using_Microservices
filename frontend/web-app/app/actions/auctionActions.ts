@@ -1,59 +1,45 @@
-"use server";
+'use server';
 
-import { Auction, Bid, PagedResult } from "@/types";
-import { fetchWrapper } from "@/lib/fetchWrapper";
-import { FieldValues } from "react-hook-form";
-import { revalidatePath } from "next/cache";
+import { auth } from '@/auth';
+import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import { Auction, Bid, PagedResult } from '@/types';
+import { revalidatePath } from 'next/cache';
+import { FieldValues } from 'react-hook-form';
 
 export async function getData(query: string): Promise<PagedResult<Auction>> {
-  return await fetchWrapper.get(`search${query}`);
+    return await fetchWrapper.get(`search${query}`)
 }
 
-// GET request
 export async function updateAuctionTest() {
-  const data = {
-    mileage: Math.floor(Math.random() * 10000) + 1,
-  };
+    const data = {
+        mileage: Math.floor(Math.random() * 10000) + 1
+    }
 
-  return await fetchWrapper.put(
-    "auctions/afbee524-5972-4075-8800-7d1f9d7b0a0c",
-    data
-  );
+    return await fetchWrapper.put('auctions/afbee524-5972-4075-8800-7d1f9d7b0a0c', data);
 }
 
-// POST request
 export async function createAuction(data: FieldValues) {
-  return await fetchWrapper.post("auctions", data);
+    return await fetchWrapper.post('auctions', data);
 }
 
-// GET request by id
 export async function getDetailedViewData(id: string): Promise<Auction> {
-  return await fetchWrapper.get(`auctions/${id}`);
+    return await fetchWrapper.get(`auctions/${id}`)
 }
 
-// PUT request by id
-export async function updateAuction(id: string, data: FieldValues) {
-  const res = await fetchWrapper.put(`auctions/${id}`, data);
-  revalidatePath(id);
-  return res;
+export async function updateAuction(data: FieldValues, id: string) {
+    const res = await fetchWrapper.put(`auctions/${id}`, data);
+    revalidatePath(`/auctions/${id}`)
+    return res;
 }
 
-// DEL request by id
 export async function deleteAuction(id: string) {
-  const res = await fetchWrapper.del(`auctions/${id}`);
-  revalidatePath(id);
-  return res;
+    return await fetchWrapper.del(`auctions/${id}`);
 }
 
-// GET bids for a particular auction
 export async function getBidsForAuction(id: string): Promise<Bid[]> {
-  return await fetchWrapper.get(`bids/${id}`);
+    return await fetchWrapper.get(`bids/${id}`);
 }
 
-// POST request to place a bid
 export async function placeBidForAuction(auctionId: string, amount: number) {
-  return await fetchWrapper.post(
-    `bids?auctionId=${auctionId}&amount=${amount}`,
-    {}
-  );
+    return await fetchWrapper.post(`bids?auctionId=${auctionId}&amount=${amount}`, {})
 }
