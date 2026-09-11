@@ -1,6 +1,6 @@
-# DriveBid — Real-Time Auction Application
+# DriveBid: Real-Time Auction Application
 
-DriveBid is a vehicle auction application built with .NET microservices and a Next.js frontend. It connects auction listings, authenticated bidding, search, and live notifications through synchronous APIs and asynchronous events.
+DriveBid is a vehicle auction application built with .NET microservices and a Next.js frontend. Users can list vehicles, search auctions, and place bids, with live updates as bids come in.
 
 The repository retains the name `Auction_App_Using_Microservices`, and the solution and local development domains retain the original `Carsties` naming.
 
